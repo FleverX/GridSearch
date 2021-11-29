@@ -19,6 +19,12 @@ enum class STATUS {
   OBS,
 };
 
+enum class SEARCH_METHOD {
+  Dijkstra,
+  Greedy,
+  Astar,
+};
+
 struct SimpleNode {
   SimpleNode(){};
   SimpleNode(int _x, int _y) : x(_x), y(_y){};
@@ -46,25 +52,35 @@ struct Node {
 };
 
 class GridSearch {
-  GridSearch() = default;
+ public:
+  GridSearch();
   ~GridSearch();
 
  public:
-  void MakePlan(const SimpleNode& start_node, const SimpleNode& goal_node,
+  bool MakePlan(const SimpleNode& start_node, const SimpleNode& goal_node,
                 const std::shared_ptr<Map>& search_map);
 
   bool SetMapDimension(int size_x, int size_y);
   bool SetStartNode(int x, int y, Node& start_node);
   bool SetGoalNode(int x, int y, Node& goal_node);
-  void SearchPath(const Node& start, const Node& goal);
-  void SetSearchMethod(const std::string search_method) {
-    search_method_ = search_method;
+  bool SearchPath(const Node& start, const Node& goal);
+  bool SetSearchMethod(const std::string search_method) {
+    if (search_method == "Dijkstra") {
+      search_method_ = SEARCH_METHOD::Dijkstra;
+    } else if (search_method == "Greedy") {
+      search_method_ = SEARCH_METHOD::Greedy;
+    } else if (search_method == "Astar") {
+      search_method_ = SEARCH_METHOD::Astar;
+    } else {
+      return false;
+    }
+    return true;
   }
   std::vector<SimpleNode> GetPath() const { return result_path_; }
 
  private:
-  bool IsReachGoal(const& current_node, const& goal_node);
-  void SetPath(const& goal_node);
+  bool IsReachGoal(const Node& current_node, const Node& goal_node);
+  void SetPath(Node& goal_node);
   void InitializeMap();
 
  private:
@@ -74,7 +90,7 @@ class GridSearch {
   std::vector<std::vector<Node>> nodes_;  // nodes_[i][j], i in y or height
                                           // driection, j in x or width
                                           // direction
-  std::string search_method_{""};
+  SEARCH_METHOD search_method_{SEARCH_METHOD::Dijkstra};
 };
 
 }  // namespace GridSearch

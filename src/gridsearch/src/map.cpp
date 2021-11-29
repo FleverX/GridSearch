@@ -1,4 +1,4 @@
-#include "include/gridsearch/map.h"
+#include "gridsearch/map.h"
 
 namespace planning {
 namespace GridSearch {
@@ -10,10 +10,10 @@ Map::Map(int _size_x, int _size_y) : size_x_(_size_x), size_y_(_size_y) {
 
 Map::~Map() { delete[] cell_array_; }
 
-Map::Map(const Map &map) {
-    this->size_x_ = map.size_x_;
-    this->size_y_ = map.size_y_;
-    *this->cell_array_ = *map.cell_array_;
+Map::Map(const Map *map) {
+    this->size_x_ = map->size_x_;
+    this->size_y_ = map->size_y_;
+    *this->cell_array_ = *map->cell_array_;
 }
 
 void Map::SetMap(const std::vector<int>& vec_in) {
@@ -45,7 +45,11 @@ bool Map::GetCost(int idx, int& cost) {
     return true;
 }
 
-bool Map::GetIndexInMap(int x, int y, &int index) {
+int Map::GetCost(int idx) {
+    return cell_array_[idx];
+}
+
+bool Map::GetIndexInMap(int x, int y, int & index) {
     if(x >= 0 && x < size_x_ && y >= 0 && y < size_y_) {
         index = y * size_x_ + x;
         return true;
@@ -60,6 +64,10 @@ bool Map::GetCellInWorld(int index, int &x, int &y) {
         return true;
     }
     return false;
+}
+
+bool Map::IsInMap(int index) {
+    return index >=0 && index < size_x_ * size_y_;
 }
 
 int Map::GetSizeInX() {
