@@ -1,0 +1,2 @@
+gridsearch
+-DCATKIN_DEVEL_PREFIX=/home/xucong/GridSearch/devel -DCMAKE_INSTALL_PREFIX=/home/xucong/GridSearch/install -G Unix Makefiles

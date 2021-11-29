@@ -10,8 +10,8 @@ namespace GridSearch {
 
 class Map {
  public:
-  Map() = default;
-  Map(const Map& map);
+  Map() = delete;
+  Map(const Map * map);
   Map(int _size_x, int _size_y);
   ~Map();
 
@@ -20,11 +20,12 @@ class Map {
   bool SetCost(int x, int y, int cost);
   bool GetCost(int x, int y, int& cost);
   bool GetCost(int idx, int& cost);
-  bool IsInMap(int x, int y);
-  bool GetIndexInMap(int x, int y, &int index);
-  bool GetCellInWorld(int index, &int x, &int y);
-  int  GetSizeInX();
-  int  GetSizeInY();
+  bool IsInMap(int index);
+  bool GetIndexInMap(int x, int y, int& index);
+  bool GetCellInWorld(int index, int& x, int& y);
+    int GetCost(int idx);
+  int GetSizeInX();
+  int GetSizeInY();
 
  private:
   int size_x_, size_y_;
