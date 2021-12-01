@@ -10,9 +10,10 @@ namespace GridSearch {
 
 class Map {
  public:
-  Map() = delete;
-  Map(const Map * map);
+  Map() = default;
+  Map(const Map& map);
   Map(int _size_x, int _size_y);
+  Map& operator=(const Map& map);
   ~Map();
 
  public:
@@ -23,9 +24,10 @@ class Map {
   bool IsInMap(int index);
   bool GetIndexInMap(int x, int y, int& index);
   bool GetCellInWorld(int index, int& x, int& y);
-    int GetCost(int idx);
+  int GetCost(int idx);
   int GetSizeInX();
   int GetSizeInY();
+  int * GetValue();
 
  private:
   int size_x_, size_y_;

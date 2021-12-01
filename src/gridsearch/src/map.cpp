@@ -8,12 +8,30 @@ Map::Map(int _size_x, int _size_y) : size_x_(_size_x), size_y_(_size_y) {
   memset(cell_array_, 0, size_x_ * size_y_ * sizeof(int));
 }
 
-Map::~Map() { delete[] cell_array_; }
+Map::~Map() { 
+   delete[] cell_array_; 
+    std::cout << "delete" << std::endl;
+  }
 
-Map::Map(const Map *map) {
-    this->size_x_ = map->size_x_;
-    this->size_y_ = map->size_y_;
-    *this->cell_array_ = *map->cell_array_;
+Map::Map(const Map& map) {
+  this->size_x_ = map.size_x_;
+  this->size_y_ = map.size_y_;
+  this->cell_array_ = new int[size_x_ * size_y_];
+  memcpy(this->cell_array_, map.cell_array_, size_x_ * size_y_ * sizeof(int));
+}
+
+Map& Map::operator=(const Map& map) {
+  if(this == &map) return *this;
+  this->size_x_ = map.size_x_;
+  this->size_y_ = map.size_y_;
+  this->cell_array_ = new int[this->size_x_ * this->size_y_];
+  memcpy(this->cell_array_, map.cell_array_, size_x_ * size_y_ * sizeof(int));
+  return *this;
+}
+
+// for test 
+int * Map::GetValue() {
+  return &cell_array_[0];
 }
 
 void Map::SetMap(const std::vector<int>& vec_in) {
@@ -28,55 +46,47 @@ void Map::SetMap(const std::vector<int>& vec_in) {
 }
 
 bool Map::SetCost(int x, int y, int cost) {
-    int idx;
-    if(!GetIndexInMap(x, y , idx)) return false;
-    cell_array_ [idx] = cost;
-    return true;
+  int idx;
+  if (!GetIndexInMap(x, y, idx)) return false;
+  cell_array_[idx] = cost;
+  return true;
 }
 bool Map::GetCost(int x, int y, int& cost) {
-    int idx;
-    if(!GetIndexInMap(x, y, idx)) return false;
-    cost = cell_array_[idx];
-    return true;
+  int idx;
+  if (!GetIndexInMap(x, y, idx)) return false;
+  cost = cell_array_[idx];
+  return true;
 }
 bool Map::GetCost(int idx, int& cost) {
-    if(idx < 0 || idx > size_x_ * size_y_) return false;
-    cost = cell_array_[idx];
+  if (idx < 0 || idx > size_x_ * size_y_) return false;
+  cost = cell_array_[idx];
+  return true;
+}
+
+int Map::GetCost(int idx) { return cell_array_[idx]; }
+
+bool Map::GetIndexInMap(int x, int y, int& index) {
+  if (x >= 0 && x < size_x_ && y >= 0 && y < size_y_) {
+    index = y * size_x_ + x;
     return true;
+  }
+  return false;
 }
 
-int Map::GetCost(int idx) {
-    return cell_array_[idx];
+bool Map::GetCellInWorld(int index, int& x, int& y) {
+  if (index >= 0 && index < size_x_ * size_y_) {
+    y = index / size_x_;
+    x = index % size_x_;
+    return true;
+  }
+  return false;
 }
 
-bool Map::GetIndexInMap(int x, int y, int & index) {
-    if(x >= 0 && x < size_x_ && y >= 0 && y < size_y_) {
-        index = y * size_x_ + x;
-        return true;
-    }
-    return false;
-}
+bool Map::IsInMap(int index) { return index >= 0 && index < size_x_ * size_y_; }
 
-bool Map::GetCellInWorld(int index, int &x, int &y) {
-    if(index >= 0 && index < size_x_ * size_y_) {
-        y = index / size_x_;
-        x = index % size_x_;
-        return true;
-    }
-    return false;
-}
+int Map::GetSizeInX() { return size_x_; }
 
-bool Map::IsInMap(int index) {
-    return index >=0 && index < size_x_ * size_y_;
-}
-
-int Map::GetSizeInX() {
-    return size_x_; 
-}
-
-int Map::GetSizeInY() {
-    return size_y_;
-}
+int Map::GetSizeInY() { return size_y_; }
 
 }  // namespace GridSearch
 }  // namespace planning

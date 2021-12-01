@@ -35,7 +35,7 @@ struct SimpleNode {
 };
 
 struct Node {
-  Node() = default;
+  Node() {};
   Node(int _x, int _y) : x(_x), y(_y){};
   Node(int _x, int _y, int _gc, int _hc, STATUS _status = STATUS::IDLE)
       : x(_x), y(_y), gc(_gc), hc(_hc), status(_status){};
@@ -58,9 +58,8 @@ class GridSearch {
 
  public:
   bool MakePlan(const SimpleNode& start_node, const SimpleNode& goal_node,
-                const std::shared_ptr<Map>& search_map);
+                const Map& search_map);
 
-  bool SetMapDimension(int size_x, int size_y);
   bool SetStartNode(int x, int y, Node& start_node);
   bool SetGoalNode(int x, int y, Node& goal_node);
   bool SearchPath(const Node& start, const Node& goal);
@@ -84,7 +83,7 @@ class GridSearch {
   void InitializeMap();
 
  private:
-  std::shared_ptr<Map> search_map_;
+  Map search_map_;
   std::vector<SimpleNode> result_path_;
   std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_list_;
   std::vector<std::vector<Node>> nodes_;  // nodes_[i][j], i in y or height
