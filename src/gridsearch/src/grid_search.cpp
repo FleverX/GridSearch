@@ -6,14 +6,12 @@ namespace GridSearch {
 GridSearch::GridSearch(){};
 GridSearch::~GridSearch(){};
 
-bool GridSearch::MakePlan(const SimpleNode& start_node,
-                          const SimpleNode& goal_node, const Map& search_map) {
+bool GridSearch::MakePlan(const SimpleNode& start_node, const SimpleNode& goal_node, const Map& search_map) {
   search_map_ = search_map;
 
   InitializeMap();
   Node start_node_search, goal_node_search;
-  if (!SetStartNode(start_node.x, start_node.y, start_node_search))
-    return false;
+  if (!SetStartNode(start_node.x, start_node.y, start_node_search)) return false;
   if (!SetGoalNode(goal_node.x, goal_node.y, goal_node_search)) return false;
   if (SearchPath(start_node_search, goal_node_search)) return true;
   return false;
@@ -40,6 +38,7 @@ bool GridSearch::SetGoalNode(int x, int y, Node& goal_node) {
 
 bool GridSearch::SearchPath(const Node& start, const Node& goal) {
   open_list_.push(start);
+  int i = 0;
   while (!open_list_.empty()) {
     Node top_node;
     top_node = open_list_.top();
@@ -57,11 +56,14 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
     // expand node in four directions
     int cur_idx;
     search_map_.GetIndexInMap(top_node.x, top_node.y, cur_idx);
+    std::cout << "cur_idx: " << cur_idx << std::endl;
 
     // rigth
-    Node* next_node = &nodes_[top_node.y][top_node.x + 1];
+    Node* next_node;
     int next_idx = cur_idx + 1;
-    if (search_map_.IsInMap(next_idx) && next_node->status != STATUS::OBS) {
+    if (search_map_.IsInMap(next_idx)) {
+      next_node = &nodes_[top_node.y][top_node.x + 1];
+      std::cout << "right+++++" << std::endl;
       if (next_node->status == STATUS::IDLE) {
         next_node->status = STATUS::OPEN;
         next_node->parent = current_node;
@@ -70,13 +72,11 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
             next_node->gc += search_map_.GetCost(next_idx);
           } break;
           case SEARCH_METHOD::Greedy: {
-            next_node->hc =
-                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           case SEARCH_METHOD::Astar: {
             next_node->gc += search_map_.GetCost(next_idx);
-            next_node->hc =
-                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           default:
             break;
@@ -88,8 +88,7 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
         switch (search_method_) {
           case SEARCH_METHOD::Dijkstra: {
             double cur_gc = current_node->gc;
-            double movement_cost =
-                search_map_.GetCost(next_idx);  // move to right cell cost
+            double movement_cost = search_map_.GetCost(next_idx);  // move to right cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -100,8 +99,7 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
           } break;
           case SEARCH_METHOD::Astar: {
             double cur_gc = current_node->gc;
-            double movement_cost =
-                search_map_.GetCost(next_idx);  // move to right cell cost
+            double movement_cost = search_map_.GetCost(next_idx);  // move to right cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -113,176 +111,182 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
         }
       }
     }
+
+    std::cout << "right: " << next_idx << std::endl;
 
     // left
-    next_node = &nodes_[top_node.y][top_node.x - 1];
     next_idx = cur_idx - 1;
-    if (search_map_.IsInMap(next_idx) && next_node->status != STATUS::OBS) {
-      if (next_node->status == STATUS::IDLE) {
-        next_node->status = STATUS::OPEN;
-        next_node->parent = current_node;
-        switch (search_method_) {
-          case SEARCH_METHOD::Dijkstra: {
-            next_node->gc += search_map_.GetCost(next_idx);
-          } break;
-          case SEARCH_METHOD::Greedy: {
-            next_node->hc =
-                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
-          } break;
-          case SEARCH_METHOD::Astar: {
-            next_node->gc += search_map_.GetCost(next_idx);
-            next_node->hc =
-                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
-          } break;
-          default:
-            break;
-        }
-        Node temp_node;
-        temp_node = *next_node;
-        open_list_.push(temp_node);
-      } else if (next_node->status == STATUS::OPEN) {
-        switch (search_method_) {
-          case SEARCH_METHOD::Dijkstra: {
-            double cur_gc = current_node->gc;
-            double movement_cost =
-                search_map_.GetCost(next_idx);  // move to left cell cost
-            double total_cost = cur_gc + movement_cost;
-            if (total_cost < next_node->gc) {
-              next_node->gc = total_cost;
-              next_node->parent = current_node;
-            }
-          } break;
-          case SEARCH_METHOD::Greedy: {
-          } break;
-          case SEARCH_METHOD::Astar: {
-            double cur_gc = current_node->gc;
-            double movement_cost =
-                search_map_.GetCost(next_idx);  // move to left cell cost
-            double total_cost = cur_gc + movement_cost;
-            if (total_cost < next_node->gc) {
-              next_node->gc = total_cost;
-              next_node->parent = current_node;
-            };
-          } break;
-          default:
-            break;
+    if (search_map_.IsInMap(next_idx)) {
+      next_node = &nodes_[top_node.y][top_node.x - 1];
+      if (next_node->status != STATUS::OBS) {
+        std::cout << "left+++++" << std::endl;
+        if (next_node->status == STATUS::IDLE) {
+          next_node->status = STATUS::OPEN;
+          next_node->parent = current_node;
+          switch (search_method_) {
+            case SEARCH_METHOD::Dijkstra: {
+              next_node->gc += search_map_.GetCost(next_idx);
+            } break;
+            case SEARCH_METHOD::Greedy: {
+              next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            } break;
+            case SEARCH_METHOD::Astar: {
+              next_node->gc += search_map_.GetCost(next_idx);
+              next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            } break;
+            default:
+              break;
+          }
+          Node temp_node;
+          temp_node = *next_node;
+          open_list_.push(temp_node);
+        } else if (next_node->status == STATUS::OPEN) {
+          switch (search_method_) {
+            case SEARCH_METHOD::Dijkstra: {
+              double cur_gc = current_node->gc;
+              double movement_cost = search_map_.GetCost(next_idx);  // move to left cell cost
+              double total_cost = cur_gc + movement_cost;
+              if (total_cost < next_node->gc) {
+                next_node->gc = total_cost;
+                next_node->parent = current_node;
+              }
+            } break;
+            case SEARCH_METHOD::Greedy: {
+            } break;
+            case SEARCH_METHOD::Astar: {
+              double cur_gc = current_node->gc;
+              double movement_cost = search_map_.GetCost(next_idx);  // move to left cell cost
+              double total_cost = cur_gc + movement_cost;
+              if (total_cost < next_node->gc) {
+                next_node->gc = total_cost;
+                next_node->parent = current_node;
+              };
+            } break;
+            default:
+              break;
+          }
         }
       }
     }
+
+    std::cout << "left: " << next_idx << std::endl;
 
     // top
-    next_node = &nodes_[top_node.y + 1][top_node.x];
+
     next_idx = cur_idx + search_map_.GetSizeInX();
-    if (search_map_.IsInMap(next_idx) && next_node->status != STATUS::OBS) {
-      if (next_node->status == STATUS::IDLE) {
-        next_node->status = STATUS::OPEN;
-        next_node->parent = current_node;
-        switch (search_method_) {
-          case SEARCH_METHOD::Dijkstra: {
-            next_node->gc += search_map_.GetCost(next_idx);
-          } break;
-          case SEARCH_METHOD::Greedy: {
-            next_node->hc =
-                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
-          } break;
-          case SEARCH_METHOD::Astar: {
-            next_node->gc += search_map_.GetCost(next_idx);
-            next_node->hc =
-                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
-          } break;
-          default:
-            break;
-        }
-        Node temp_node;
-        temp_node = *next_node;
-        open_list_.push(temp_node);
-      } else if (next_node->status == STATUS::OPEN) {
-        switch (search_method_) {
-          case SEARCH_METHOD::Dijkstra: {
-            double cur_gc = current_node->gc;
-            double movement_cost =
-                search_map_.GetCost(next_idx);  // move to top cell cost
-            double total_cost = cur_gc + movement_cost;
-            if (total_cost < next_node->gc) {
-              next_node->gc = total_cost;
-              next_node->parent = current_node;
-            }
-          } break;
-          case SEARCH_METHOD::Greedy: {
-          } break;
-          case SEARCH_METHOD::Astar: {
-            double cur_gc = current_node->gc;
-            double movement_cost =
-                search_map_.GetCost(next_idx);  // move to top cell cost
-            double total_cost = cur_gc + movement_cost;
-            if (total_cost < next_node->gc) {
-              next_node->gc = total_cost;
-              next_node->parent = current_node;
-            };
-          } break;
-          default:
-            break;
+    if (search_map_.IsInMap(next_idx)) {
+      next_node = &nodes_[top_node.y + 1][top_node.x];
+      if (next_node->status != STATUS::OBS) {
+        std::cout << "top+++++" << std::endl;
+        if (next_node->status == STATUS::IDLE) {
+          next_node->status = STATUS::OPEN;
+          next_node->parent = current_node;
+          switch (search_method_) {
+            case SEARCH_METHOD::Dijkstra: {
+              next_node->gc += search_map_.GetCost(next_idx);
+            } break;
+            case SEARCH_METHOD::Greedy: {
+              next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            } break;
+            case SEARCH_METHOD::Astar: {
+              next_node->gc += search_map_.GetCost(next_idx);
+              next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            } break;
+            default:
+              break;
+          }
+          Node temp_node;
+          temp_node = *next_node;
+          open_list_.push(temp_node);
+        } else if (next_node->status == STATUS::OPEN) {
+          switch (search_method_) {
+            case SEARCH_METHOD::Dijkstra: {
+              double cur_gc = current_node->gc;
+              double movement_cost = search_map_.GetCost(next_idx);  // move to top cell cost
+              double total_cost = cur_gc + movement_cost;
+              if (total_cost < next_node->gc) {
+                next_node->gc = total_cost;
+                next_node->parent = current_node;
+              }
+            } break;
+            case SEARCH_METHOD::Greedy: {
+            } break;
+            case SEARCH_METHOD::Astar: {
+              double cur_gc = current_node->gc;
+              double movement_cost = search_map_.GetCost(next_idx);  // move to top cell cost
+              double total_cost = cur_gc + movement_cost;
+              if (total_cost < next_node->gc) {
+                next_node->gc = total_cost;
+                next_node->parent = current_node;
+              };
+            } break;
+            default:
+              break;
+          }
         }
       }
     }
+    std::cout << "top: " << next_idx << std::endl;
 
     // down
-    next_node = &nodes_[top_node.y - 1][top_node.x];
+
     next_idx = cur_idx - search_map_.GetSizeInX();
-    if (search_map_.IsInMap(next_idx) && next_node->status != STATUS::OBS) {
-      if (next_node->status == STATUS::IDLE) {
-        next_node->status = STATUS::OPEN;
-        next_node->parent = current_node;
-        switch (search_method_) {
-          case SEARCH_METHOD::Dijkstra: {
-            next_node->gc += search_map_.GetCost(next_idx);
-          } break;
-          case SEARCH_METHOD::Greedy: {
-            next_node->hc =
-                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
-          } break;
-          case SEARCH_METHOD::Astar: {
-            next_node->gc += search_map_.GetCost(next_idx);
-            next_node->hc =
-                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
-          } break;
-          default:
-            break;
-        }
-        Node temp_node;
-        temp_node = *next_node;
-        open_list_.push(temp_node);
-      } else if (next_node->status == STATUS::OPEN) {
-        switch (search_method_) {
-          case SEARCH_METHOD::Dijkstra: {
-            double cur_gc = current_node->gc;
-            double movement_cost =
-                search_map_.GetCost(next_idx);  // move to down cell cost
-            double total_cost = cur_gc + movement_cost;
-            if (total_cost < next_node->gc) {
-              next_node->gc = total_cost;
-              next_node->parent = current_node;
-            }
-          } break;
-          case SEARCH_METHOD::Greedy: {
-          } break;
-          case SEARCH_METHOD::Astar: {
-            double cur_gc = current_node->gc;
-            double movement_cost =
-                search_map_.GetCost(next_idx);  // move to down cell cost
-            double total_cost = cur_gc + movement_cost;
-            if (total_cost < next_node->gc) {
-              next_node->gc = total_cost;
-              next_node->parent = current_node;
-            };
-          } break;
-          default:
-            break;
+    if (search_map_.IsInMap(next_idx)) {
+      next_node = &nodes_[top_node.y - 1][top_node.x];
+      if (next_node->status != STATUS::OBS && next_node->status == STATUS::CLOSED) {
+        if (next_node->status == STATUS::IDLE) {
+          next_node->status = STATUS::OPEN;
+          next_node->parent = current_node;
+          switch (search_method_) {
+            case SEARCH_METHOD::Dijkstra: {
+              next_node->gc += search_map_.GetCost(next_idx);
+            } break;
+            case SEARCH_METHOD::Greedy: {
+              next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            } break;
+            case SEARCH_METHOD::Astar: {
+              next_node->gc += search_map_.GetCost(next_idx);
+              next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            } break;
+            default:
+              break;
+          }
+          Node temp_node;
+          temp_node = *next_node;
+          open_list_.push(temp_node);
+        } else if (next_node->status == STATUS::OPEN) {
+          switch (search_method_) {
+            case SEARCH_METHOD::Dijkstra: {
+              double cur_gc = current_node->gc;
+              double movement_cost = search_map_.GetCost(next_idx);  // move to down cell cost
+              double total_cost = cur_gc + movement_cost;
+              if (total_cost < next_node->gc) {
+                next_node->gc = total_cost;
+                next_node->parent = current_node;
+              }
+            } break;
+            case SEARCH_METHOD::Greedy: {
+            } break;
+            case SEARCH_METHOD::Astar: {
+              double cur_gc = current_node->gc;
+              double movement_cost = search_map_.GetCost(next_idx);  // move to down cell cost
+              double total_cost = cur_gc + movement_cost;
+              if (total_cost < next_node->gc) {
+                next_node->gc = total_cost;
+                next_node->parent = current_node;
+              };
+            } break;
+            default:
+              break;
+          }
         }
       }
     }
-
+    std::cout << "down: " << next_idx << std::endl;
+    i++;
+    if (i > 1) break;
   }  // while
+  std::cout << "break++++++++++++++: " << std::endl;
   return false;
 }
 
@@ -313,9 +317,7 @@ bool GridSearch::IsReachGoal(const Node& current_node, const Node& goal_node) {
   // std::cout << "current: " << current_node.x << current_node.y
   //           << "goal: " << goal_node.x << goal_node.y << std::endl;
 
-  if ((abs(current_node.x - goal_node.x) < 1) &&
-      (abs(current_node.y - goal_node.y) < 1))
-    return true;
+  if ((abs(current_node.x - goal_node.x) < 1) && (abs(current_node.y - goal_node.y) < 1)) return true;
   return false;
 }
 

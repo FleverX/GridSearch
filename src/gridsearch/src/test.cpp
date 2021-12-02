@@ -26,10 +26,10 @@ int main(int argc, char** argv) {
   if (grid_search_planner->MakePlan(start_node, goal_node, grid_map)) {
     result_path = grid_search_planner->GetPath();
   }
-  for (size_t i = 0; i < result_path.size(); ++i) {
-    std::cout << "i: " << i << " x： " << result_path.at(i).x
-              << " y: " << result_path.at(i).y << std::endl;
-  }
+  // for (size_t i = 0; i < result_path.size(); ++i) {
+  //   std::cout << "i: " << i << " x： " << result_path.at(i).x
+  //             << " y: " << result_path.at(i).y << std::endl;
+  // }
   std::cout << "11" << grid_map.GetValue() << std::endl;
   return 0;
 }

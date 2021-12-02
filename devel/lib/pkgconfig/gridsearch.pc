@@ -1,8 +1,0 @@
-prefix=/home/xucong/GridSearch/devel
-
-Name: gridsearch
-Description: Description of gridsearch
-Version: 0.0.0
-Cflags: -I/home/xucong/GridSearch/src/gridsearch/include
-Libs: -L${prefix}/lib -lgridsearch
-Requires: geometry_msgs roscpp std_msgs
