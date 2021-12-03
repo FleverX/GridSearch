@@ -10,7 +10,6 @@ Map::Map(int _size_x, int _size_y) : size_x_(_size_x), size_y_(_size_y) {
 
 Map::~Map() { 
    delete[] cell_array_; 
-    std::cout << "delete" << std::endl;
   }
 
 Map::Map(const Map& map) {
