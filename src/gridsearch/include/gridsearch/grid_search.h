@@ -44,7 +44,7 @@ struct Node {
   STATUS status = STATUS::IDLE;
   int gc = 0;
   int hc = 0;
-  int fc = gc + hc;
+  int fc = 0;
 
   bool operator>(const Node& right) const { return fc > right.fc; }
 

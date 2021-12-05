@@ -6,21 +6,22 @@ namespace GridSearch {
 GridSearch::GridSearch(){};
 GridSearch::~GridSearch(){};
 
-bool GridSearch::MakePlan(const SimpleNode& start_node, const SimpleNode& goal_node, const Map& search_map) {
+bool GridSearch::MakePlan(const SimpleNode& start_node,
+                          const SimpleNode& goal_node, const Map& search_map) {
   search_map_ = search_map;
-
   InitializeMap();
   // {
   //   for (size_t i = 0; i < nodes_.size(); ++i) {
   //     for (size_t j = 0; j < nodes_[0].size(); ++j) {
-  //       std::cout << "row: " << nodes_[i][j].y << std::endl;
-  //       std::cout << "column: " << nodes_[i][j].x << std::endl;
+  //       std::cout << "size: " << nodes_[0].size() << std::endl;
+  //       std::cout << "row: " << nodes_[i][j].y << "column: " << nodes_[i][j].x << std::endl;
   //     }
   //     std::cout << "-----------" << std::endl;
   //   }
   // }
   Node start_node_search, goal_node_search;
-  if (!SetStartNode(start_node.x, start_node.y, start_node_search)) return false;
+  if (!SetStartNode(start_node.x, start_node.y, start_node_search))
+    return false;
   if (!SetGoalNode(goal_node.x, goal_node.y, goal_node_search)) return false;
   if (SearchPath(start_node_search, goal_node_search)) return true;
   return false;
@@ -51,11 +52,12 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
     Node top_node;
     top_node = open_list_.top();
     open_list_.pop();
+    // std::cout << "top_node: " << top_node.x << " " << top_node.y << " "
+    //           << top_node.gc << top_node.fc << std::endl;
     nodes_[top_node.y][top_node.x].status = STATUS::CLOSED;
 
     if (IsReachGoal(top_node, goal)) {
       SetPath(top_node);
-      std::cout << search_map_.GetValue() << std::endl;
       return true;
     }
 
@@ -66,9 +68,10 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
     search_map_.GetIndexInMap(top_node.x, top_node.y, cur_idx);
 
     // rigth
-    Node* next_node;
-    int next_idx = cur_idx + 1;
-    if (search_map_.IsInMap(next_idx)) {
+
+    if (top_node.x + 1 < nodes_[0].size()) {
+      Node* next_node;
+      int next_idx = cur_idx + 1;
       int mx, my;
       search_map_.GetCellInWorld(next_idx, mx, my);
       next_node = &nodes_[my][mx];
@@ -80,23 +83,29 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
             next_node->gc += search_map_.GetCost(next_idx);
           } break;
           case SEARCH_METHOD::Greedy: {
-            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc =
+                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           case SEARCH_METHOD::Astar: {
             next_node->gc += search_map_.GetCost(next_idx);
-            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc =
+                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           default:
             break;
         }
         Node temp_node;
+        next_node->fc = next_node->gc + next_node->hc;
+        // std::cout << "right: " << next_node->x << " " << next_node->y << " "
+        //           << next_node->gc << next_node->fc << std::endl;
         temp_node = *next_node;
         open_list_.push(temp_node);
       } else if (next_node->status == STATUS::OPEN) {
         switch (search_method_) {
           case SEARCH_METHOD::Dijkstra: {
             double cur_gc = current_node->gc;
-            double movement_cost = search_map_.GetCost(next_idx);  // move to right cell cost
+            double movement_cost =
+                search_map_.GetCost(next_idx);  // move to right cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -107,7 +116,8 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
           } break;
           case SEARCH_METHOD::Astar: {
             double cur_gc = current_node->gc;
-            double movement_cost = search_map_.GetCost(next_idx);  // move to right cell cost
+            double movement_cost =
+                search_map_.GetCost(next_idx);  // move to right cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -121,8 +131,9 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
     }
 
     // left
-    next_idx = cur_idx - 1;
-    if (search_map_.IsInMap(next_idx)) {
+    if (top_node.x - 1 >= 0) {
+      Node* next_node;
+      int next_idx = cur_idx - 1;
       int mx, my;
       search_map_.GetCellInWorld(next_idx, mx, my);
       next_node = &nodes_[my][mx];
@@ -134,15 +145,20 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
             next_node->gc += search_map_.GetCost(next_idx);
           } break;
           case SEARCH_METHOD::Greedy: {
-            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc =
+                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           case SEARCH_METHOD::Astar: {
             next_node->gc += search_map_.GetCost(next_idx);
-            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc =
+                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           default:
             break;
         }
+        next_node->fc = next_node->gc + next_node->hc;
+        // std::cout << "left: " << next_node->x << " " << next_node->y << " "
+        //           << next_node->gc << next_node->fc << std::endl;
         Node temp_node;
         temp_node = *next_node;
         open_list_.push(temp_node);
@@ -150,7 +166,8 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
         switch (search_method_) {
           case SEARCH_METHOD::Dijkstra: {
             double cur_gc = current_node->gc;
-            double movement_cost = search_map_.GetCost(next_idx);  // move to left cell cost
+            double movement_cost =
+                search_map_.GetCost(next_idx);  // move to left cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -161,7 +178,8 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
           } break;
           case SEARCH_METHOD::Astar: {
             double cur_gc = current_node->gc;
-            double movement_cost = search_map_.GetCost(next_idx);  // move to left cell cost
+            double movement_cost =
+                search_map_.GetCost(next_idx);  // move to left cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -177,8 +195,9 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
     // std::cout << "left: " << next_idx << std::endl;
 
     // top
-    next_idx = cur_idx + search_map_.GetSizeInX();
-    if (search_map_.IsInMap(next_idx)) {
+    if (top_node.y + 1 < nodes_.size()) {
+      Node* next_node;
+      int next_idx = cur_idx + search_map_.GetSizeInX();
       int mx, my;
       search_map_.GetCellInWorld(next_idx, mx, my);
       next_node = &nodes_[my][mx];
@@ -191,23 +210,29 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
             next_node->gc += search_map_.GetCost(next_idx);
           } break;
           case SEARCH_METHOD::Greedy: {
-            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc =
+                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           case SEARCH_METHOD::Astar: {
             next_node->gc += search_map_.GetCost(next_idx);
-            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc =
+                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           default:
             break;
         }
         Node temp_node;
+        next_node->fc = next_node->gc + next_node->hc;
+        // std::cout << "top: " << next_node->x << " " << next_node->y << " "
+        //           << next_node->gc << next_node->fc << std::endl;
         temp_node = *next_node;
         open_list_.push(temp_node);
       } else if (next_node->status == STATUS::OPEN) {
         switch (search_method_) {
           case SEARCH_METHOD::Dijkstra: {
             double cur_gc = current_node->gc;
-            double movement_cost = search_map_.GetCost(next_idx);  // move to top cell cost
+            double movement_cost =
+                search_map_.GetCost(next_idx);  // move to top cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -218,7 +243,8 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
           } break;
           case SEARCH_METHOD::Astar: {
             double cur_gc = current_node->gc;
-            double movement_cost = search_map_.GetCost(next_idx);  // move to top cell cost
+            double movement_cost =
+                search_map_.GetCost(next_idx);  // move to top cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -232,8 +258,9 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
     }
 
     // down
-    next_idx = cur_idx - search_map_.GetSizeInX();
-    if (search_map_.IsInMap(next_idx)) {
+    if (top_node.y - 1 >= 0) {
+      Node* next_node;
+      int next_idx = cur_idx - search_map_.GetSizeInX();
       int mx, my;
       search_map_.GetCellInWorld(next_idx, mx, my);
       next_node = &nodes_[my][mx];
@@ -245,23 +272,29 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
             next_node->gc += search_map_.GetCost(next_idx);
           } break;
           case SEARCH_METHOD::Greedy: {
-            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc =
+                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           case SEARCH_METHOD::Astar: {
             next_node->gc += search_map_.GetCost(next_idx);
-            next_node->hc = abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
+            next_node->hc =
+                abs(next_node->x - goal.x) + abs(next_node->y - goal.y);
           } break;
           default:
             break;
         }
         Node temp_node;
+        next_node->fc = next_node->gc + next_node->hc;
+        // std::cout << "down: " << next_node->x << " " << next_node->y << " "
+        //           << next_node->gc << next_node->fc << std::endl;
         temp_node = *next_node;
         open_list_.push(temp_node);
       } else if (next_node->status == STATUS::OPEN) {
         switch (search_method_) {
           case SEARCH_METHOD::Dijkstra: {
             double cur_gc = current_node->gc;
-            double movement_cost = search_map_.GetCost(next_idx);  // move to down cell cost
+            double movement_cost =
+                search_map_.GetCost(next_idx);  // move to down cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -272,7 +305,8 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
           } break;
           case SEARCH_METHOD::Astar: {
             double cur_gc = current_node->gc;
-            double movement_cost = search_map_.GetCost(next_idx);  // move to down cell cost
+            double movement_cost =
+                search_map_.GetCost(next_idx);  // move to down cell cost
             double total_cost = cur_gc + movement_cost;
             if (total_cost < next_node->gc) {
               next_node->gc = total_cost;
@@ -284,6 +318,7 @@ bool GridSearch::SearchPath(const Node& start, const Node& goal) {
         }
       }
     }
+
   }  // while
   return false;
 }
@@ -294,28 +329,29 @@ void GridSearch::InitializeMap() {
     int size_in_y = search_map_.GetSizeInY();
     nodes_.resize(size_in_y);
     for (size_t i = 0; i < size_in_y; ++i) {
-      nodes_.resize(size_in_x);
+      nodes_[i].resize(size_in_x);
     }
     for (size_t i = 0; i < size_in_y; ++i) {
       for (size_t j = 0; j < size_in_x; ++j) {
         int idx = i * size_in_x + j;
         int cost;
         search_map_.GetCost(idx, cost);
-        Node node(j, i);
-        nodes_.at(i).emplace_back(node);
+        // Node node(j, i);
+        // nodes_[i].emplace_back(node);
+        nodes_[i][j].x = j;
+        nodes_[i][j].y = i;
         if (cost < 0) nodes_[i][j].status = STATUS::OBS;
-        if (search_method_ == SEARCH_METHOD::Dijkstra) nodes_[i][j].hc = 0;
-        if (search_method_ == SEARCH_METHOD::Greedy) nodes_[i][j].gc = 0;
+        // if (search_method_ == SEARCH_METHOD::Dijkstra) nodes_[i][j].hc = 0;
+        // if (search_method_ == SEARCH_METHOD::Greedy) nodes_[i][j].gc = 0;
       }
     }
   }
 }
 
 bool GridSearch::IsReachGoal(const Node& current_node, const Node& goal_node) {
-  // std::cout << "current: " << current_node.x << current_node.y
-  //           << "goal: " << goal_node.x << goal_node.y << std::endl;
-
-  if ((abs(current_node.x - goal_node.x) < 1) && (abs(current_node.y - goal_node.y) < 1)) return true;
+  if ((abs(current_node.x - goal_node.x) < 1) &&
+      (abs(current_node.y - goal_node.y) < 1))
+    return true;
   return false;
 }
 
