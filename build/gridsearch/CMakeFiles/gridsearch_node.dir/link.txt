@@ -1,1 +1,0 @@
-/usr/bin/c++    -Wall -std=c++11 -Wfatal-errors   CMakeFiles/gridsearch_node.dir/src/test.cpp.o CMakeFiles/gridsearch_node.dir/src/map.cpp.o CMakeFiles/gridsearch_node.dir/src/grid_search.cpp.o  -o /home/xucong/GridSearch/devel/lib/gridsearch/gridsearch_node -rdynamic 
